@@ -4,72 +4,112 @@ import { questions } from "./data/questions.js";
 document.querySelector("#app").innerHTML = `
   <main class="quiz-app">
     <header class="quiz-header">
-      <a class="brand" href="/" aria-label="QuizFlow home">
-        QuizFlow
-      </a>
-      <p class="tagline">Learn something new, one question at a time.</p>
+      <a class="brand" href="/" aria-label="QuizFlow home">QuizFlow</a>
+
+      <nav class="header-nav" aria-label="Main navigation">
+        <a href="#quiz-title">Learn</a>
+        <span aria-hidden="true">•</span>
+        <a href="#question-area">Practice</a>
+        <span aria-hidden="true">•</span>
+        <a href="#results">Improve</a>
+      </nav>
+
+      <span class="header-badge">INTERACTIVE LEARNING</span>
     </header>
 
-    <section
-      class="quiz-panel"
-      aria-labelledby="quiz-title"
-    >
-      <div class="quiz-intro">
-        <p class="eyebrow">INTERACTIVE QUIZ</p>
-        <h1 id="quiz-title">Test your knowledge</h1>
-        <p>Read each question carefully and choose your answer.</p>
-      </div>
+    <div class="dashboard-layout">
+      <aside class="sidebar" aria-label="Quiz navigation">
+        <p class="sidebar-heading">YOUR SPACE</p>
+        <a class="sidebar-link is-active" href="#quiz-title" aria-current="page">Home</a>
+        <a class="sidebar-link" href="#question-area">Quizzes</a>
+        <a class="sidebar-link" href="#results">Results</a>
 
-      <div class="quiz-status">
-        <p id="question-count">Question 1 of 5</p>
-        <p id="timer" aria-live="off">Time: 15s</p>
-      </div>
+        <div class="sidebar-note">
+          <p class="sidebar-note-title">Keep learning!</p>
+          <p>Small steps build big knowledge.</p>
+        </div>
+      </aside>
 
-      <div
-        class="progress-track"
-        role="progressbar"
-        aria-label="Quiz progress"
-        aria-valuemin="0"
-        aria-valuemax="5"
-        aria-valuenow="0"
-        id="progress-bar"
-      >
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
+      <section class="quiz-panel" aria-labelledby="quiz-title">
+        <div class="quiz-intro">
+          <p class="eyebrow">INTERACTIVE QUIZ</p>
+          <h1 id="quiz-title">Test your knowledge</h1>
+          <p>Read each question carefully and choose your answer.</p>
+        </div>
 
-      <div class="question-area" id="question-area">
-        <h2 id="question-text" tabindex="-1">
-          Your first question will appear here.
-        </h2>
-        <div class="answer-list" id="answer-list"></div>
-      </div>
+        <div class="quiz-status">
+          <p id="question-count">Question 1 of 5</p>
+          <p id="timer" aria-live="off">Time: 15s</p>
+        </div>
 
-      <p
-        id="feedback"
-        class="feedback"
-        role="status"
-        aria-live="polite"
-      ></p>
+        <div
+          class="progress-track"
+          role="progressbar"
+          aria-label="Quiz progress"
+          aria-valuemin="0"
+          aria-valuemax="5"
+          aria-valuenow="0"
+          id="progress-bar"
+        >
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
 
-      <div class="quiz-actions">
-        <button id="next-button" type="button" disabled>
-          Next question
-        </button>
-      </div>
+        <div class="question-area" id="question-area">
+          <h2 id="question-text" tabindex="-1">
+            Your first question will appear here.
+          </h2>
+          <div class="answer-list" id="answer-list"></div>
+        </div>
 
-      <section
-        id="results"
-        class="results"
-        aria-labelledby="results-title"
-        hidden
-      >
-        <h2 id="results-title" tabindex="-1">Quiz complete!</h2>
-        <p id="final-score"></p>
-        <button id="restart-button" type="button">
-          Try again
-        </button>
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+
+        <div class="quiz-actions">
+          <button id="next-button" type="button" disabled>
+            Next question
+          </button>
+        </div>
+
+        <section
+          id="results"
+          class="results"
+          aria-labelledby="results-title"
+          hidden
+        >
+          <h2 id="results-title" tabindex="-1">Quiz complete!</h2>
+          <p id="final-score"></p>
+          <button id="restart-button" type="button">Try again</button>
+        </section>
       </section>
-    </section>
+
+      <aside class="info-panel" aria-label="Quiz information">
+        <h2 class="info-heading">Your progress</h2>
+
+        <div class="progress-summary">
+          <p class="progress-summary-value" id="progress-summary-value">
+            1 / 5
+          </p>
+          <p class="progress-summary-label">Current question</p>
+        </div>
+
+        <div class="info-divider"></div>
+
+        <h3 class="info-subheading">Quiz info</h3>
+        <p class="info-category">Web Development</p>
+        <p class="info-description">
+          Practice web fundamentals and strengthen your knowledge one question at a time.
+        </p>
+
+        <div class="info-stat">
+          <span>Questions</span>
+          <strong>5</strong>
+        </div>
+
+        <div class="info-stat">
+          <span>Time per question</span>
+          <strong>15 sec</strong>
+        </div>
+      </aside>
+    </div>
 
     <footer class="quiz-footer">
       <p>Every question is an opportunity to learn.</p>
@@ -83,6 +123,7 @@ const questionCount = document.querySelector("#question-count");
 const timerDisplay = document.querySelector("#timer");
 const progressBar = document.querySelector("#progress-bar");
 const progressFill = document.querySelector("#progress-fill");
+const progressSummaryValue = document.querySelector("#progress-summary-value");
 
 const feedback = document.querySelector("#feedback");
 const nextButton = document.querySelector("#next-button");
@@ -191,6 +232,9 @@ function renderQuestion(question, index) {
 
   questionCount.textContent = `Question ${index + 1} of ${questions.length}`;
 
+  // Keep the dashboard summary synchronized with the current question.
+  progressSummaryValue.textContent = `${index + 1} / ${questions.length}`;
+
   progressBar.setAttribute("aria-valuemax", questions.length);
   progressBar.setAttribute("aria-valuenow", index + 1);
 
@@ -257,6 +301,8 @@ function handleNextQuestion() {
 
   // Show results after the final question has been answered.
   if (currentQuestionIndex === questions.length - 1) {
+    stopTimer();
+
     finalScore.textContent = `You scored ${score} out of ${questions.length}.`;
 
     quizIntro.hidden = true;
@@ -287,6 +333,8 @@ function handleNextQuestion() {
 }
 
 function handleRestart() {
+  stopTimer();
+
   currentQuestionIndex = 0;
   score = 0;
 
@@ -314,4 +362,5 @@ answerList.addEventListener("click", handleAnswerSelection);
 nextButton.addEventListener("click", handleNextQuestion);
 restartButton.addEventListener("click", handleRestart);
 
+answerList.dataset.answered = "false";
 renderQuestion(questions[0], 0);
