@@ -80,6 +80,7 @@ const progressBar = document.querySelector("#progress-bar");
 const progressFill = document.querySelector("#progress-fill");
 
 let currentQuestionIndex = 0;
+let score = 0;
 
 function renderQuestion(question, index) {
   questionText.textContent = question.text;
@@ -113,10 +114,20 @@ function renderQuestion(question, index) {
 
   const progressPercentage = ((index + 1) / questions.length) * 100;
   progressFill.style.width = `${progressPercentage}%`;
+  nextButton.textContent =
+    index === questions.length - 1 ? "See results" : "Next question";
 }
 
 const feedback = document.querySelector("#feedback");
 const nextButton = document.querySelector("#next-button");
+const results = document.querySelector("#results");
+const finalScore = document.querySelector("#final-score");
+const restartButton = document.querySelector("#restart-button");
+const questionArea = document.querySelector("#question-area");
+const quizStatus = document.querySelector(".quiz-status");
+const progressBarContainer = document.querySelector(".progress-track");
+const quizIntro = document.querySelector(".quiz-intro");
+const quizActions = document.querySelector(".quiz-actions");
 
 function handleAnswerSelection(event) {
   const button = event.target.closest(".answer-option");
@@ -135,6 +146,10 @@ function handleAnswerSelection(event) {
   const selectedOptionId = button.dataset.optionId;
   const question = questions[currentQuestionIndex];
   const isCorrect = selectedOptionId === question.correctOptionId;
+
+  if (isCorrect) {
+    score += 1;
+  }
 
   const answerButtons = answerList.querySelectorAll(".answer-option");
 
@@ -169,8 +184,18 @@ function handleNextQuestion() {
     return;
   }
 
-  // Do not move beyond the last available question.
-  if (currentQuestionIndex >= questions.length - 1) {
+  // Show results after the final question has been answered.
+  if (currentQuestionIndex === questions.length - 1) {
+    finalScore.textContent = `You scored ${score} out of ${questions.length}.`;
+
+    quizIntro.hidden = true;
+    quizStatus.hidden = true;
+    progressBarContainer.hidden = true;
+    questionArea.hidden = true;
+    feedback.hidden = true;
+    quizActions.hidden = true;
+    results.hidden = false;
+
     return;
   }
 
@@ -184,5 +209,26 @@ function handleNextQuestion() {
 
   renderQuestion(questions[currentQuestionIndex], currentQuestionIndex);
 }
-
 nextButton.addEventListener("click", handleNextQuestion);
+function handleRestart() {
+  currentQuestionIndex = 0;
+  score = 0;
+
+  results.hidden = true;
+  quizIntro.hidden = false;
+  quizStatus.hidden = false;
+  progressBarContainer.hidden = false;
+  questionArea.hidden = false;
+  feedback.hidden = false;
+  quizActions.hidden = false;
+
+  feedback.textContent = "";
+  feedback.className = "feedback";
+
+  answerList.dataset.answered = "false";
+  nextButton.disabled = true;
+
+  renderQuestion(questions[currentQuestionIndex], currentQuestionIndex);
+}
+
+restartButton.addEventListener("click", handleRestart);
