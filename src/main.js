@@ -79,6 +79,8 @@ const questionCount = document.querySelector("#question-count");
 const progressBar = document.querySelector("#progress-bar");
 const progressFill = document.querySelector("#progress-fill");
 
+let currentQuestionIndex = 0;
+
 function renderQuestion(question, index) {
   questionText.textContent = question.text;
 
@@ -131,7 +133,7 @@ function handleAnswerSelection(event) {
   answerList.dataset.answered = "true";
 
   const selectedOptionId = button.dataset.optionId;
-  const question = questions[0];
+  const question = questions[currentQuestionIndex];
   const isCorrect = selectedOptionId === question.correctOptionId;
 
   const answerButtons = answerList.querySelectorAll(".answer-option");
@@ -160,3 +162,27 @@ function handleAnswerSelection(event) {
 answerList.addEventListener("click", handleAnswerSelection);
 
 renderQuestion(questions[0], 0);
+
+function handleNextQuestion() {
+  // Do not advance until the current question is answered.
+  if (answerList.dataset.answered !== "true") {
+    return;
+  }
+
+  // Do not move beyond the last available question.
+  if (currentQuestionIndex >= questions.length - 1) {
+    return;
+  }
+
+  currentQuestionIndex += 1;
+
+  feedback.textContent = "";
+  feedback.className = "feedback";
+
+  answerList.dataset.answered = "false";
+  nextButton.disabled = true;
+
+  renderQuestion(questions[currentQuestionIndex], currentQuestionIndex);
+}
+
+nextButton.addEventListener("click", handleNextQuestion);
