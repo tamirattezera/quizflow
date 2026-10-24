@@ -76,11 +76,77 @@ document.querySelector("#app").innerHTML = `
 const questionText = document.querySelector("#question-text");
 const answerList = document.querySelector("#answer-list");
 const questionCount = document.querySelector("#question-count");
+const timerDisplay = document.querySelector("#timer");
 const progressBar = document.querySelector("#progress-bar");
 const progressFill = document.querySelector("#progress-fill");
 
+const QUESTION_TIME_LIMIT = 15;
+
 let currentQuestionIndex = 0;
 let score = 0;
+
+let timerIntervalId = null;
+let timerDeadline = null;
+
+function stopTimer() {
+  if (timerIntervalId !== null) {
+    clearInterval(timerIntervalId);
+    timerIntervalId = null;
+  }
+
+  timerDeadline = null;
+}
+
+function handleTimeExpired() {
+  // Prevent the timeout and an answer click from finalizing the same question.
+  if (answerList.dataset.answered === "true") {
+    return;
+  }
+
+  answerList.dataset.answered = "true";
+
+  const question = questions[currentQuestionIndex];
+  const answerButtons = answerList.querySelectorAll(".answer-option");
+
+  answerButtons.forEach((button) => {
+    button.disabled = true;
+    button.setAttribute("aria-pressed", "false");
+
+    if (button.dataset.optionId === question.correctOptionId) {
+      button.classList.add("is-correct");
+    }
+  });
+
+  feedback.className = "feedback is-incorrect";
+  feedback.textContent = `Time's up! ${question.explanation}`;
+
+  nextButton.disabled = false;
+}
+
+function startTimer() {
+  stopTimer();
+
+  timerDeadline = Date.now() + QUESTION_TIME_LIMIT * 1000;
+
+  function updateTimer() {
+    const remainingMilliseconds = timerDeadline - Date.now();
+    const remainingSeconds = Math.max(
+      0,
+      Math.ceil(remainingMilliseconds / 1000),
+    );
+
+    timerDisplay.textContent = `Time: ${remainingSeconds}s`;
+
+    if (remainingMilliseconds <= 0) {
+      stopTimer();
+      handleTimeExpired();
+    }
+  }
+
+  updateTimer();
+
+  timerIntervalId = setInterval(updateTimer, 250);
+}
 
 function renderQuestion(question, index) {
   questionText.textContent = question.text;
@@ -116,6 +182,7 @@ function renderQuestion(question, index) {
   progressFill.style.width = `${progressPercentage}%`;
   nextButton.textContent =
     index === questions.length - 1 ? "See results" : "Next question";
+  startTimer();
 }
 
 const feedback = document.querySelector("#feedback");
@@ -142,6 +209,7 @@ function handleAnswerSelection(event) {
   }
 
   answerList.dataset.answered = "true";
+  stopTimer();
 
   const selectedOptionId = button.dataset.optionId;
   const question = questions[currentQuestionIndex];
