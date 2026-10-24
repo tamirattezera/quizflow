@@ -1,5 +1,6 @@
 import "./style.css";
 import { questions } from "./data/questions.js";
+
 document.querySelector("#app").innerHTML = `
   <main class="quiz-app">
     <header class="quiz-header">
@@ -37,7 +38,9 @@ document.querySelector("#app").innerHTML = `
       </div>
 
       <div class="question-area" id="question-area">
-        <h2 id="question-text">Your first question will appear here.</h2>
+        <h2 id="question-text" tabindex="-1">
+          Your first question will appear here.
+        </h2>
         <div class="answer-list" id="answer-list"></div>
       </div>
 
@@ -60,7 +63,7 @@ document.querySelector("#app").innerHTML = `
         aria-labelledby="results-title"
         hidden
       >
-        <h2 id="results-title">Quiz complete!</h2>
+        <h2 id="results-title" tabindex="-1">Quiz complete!</h2>
         <p id="final-score"></p>
         <button id="restart-button" type="button">
           Try again
@@ -73,12 +76,25 @@ document.querySelector("#app").innerHTML = `
     </footer>
   </main>
 `;
+
 const questionText = document.querySelector("#question-text");
 const answerList = document.querySelector("#answer-list");
 const questionCount = document.querySelector("#question-count");
 const timerDisplay = document.querySelector("#timer");
 const progressBar = document.querySelector("#progress-bar");
 const progressFill = document.querySelector("#progress-fill");
+
+const feedback = document.querySelector("#feedback");
+const nextButton = document.querySelector("#next-button");
+const results = document.querySelector("#results");
+const resultsTitle = document.querySelector("#results-title");
+const finalScore = document.querySelector("#final-score");
+const restartButton = document.querySelector("#restart-button");
+const questionArea = document.querySelector("#question-area");
+const quizStatus = document.querySelector(".quiz-status");
+const progressBarContainer = document.querySelector(".progress-track");
+const quizIntro = document.querySelector(".quiz-intro");
+const quizActions = document.querySelector(".quiz-actions");
 
 const QUESTION_TIME_LIMIT = 15;
 
@@ -180,21 +196,12 @@ function renderQuestion(question, index) {
 
   const progressPercentage = ((index + 1) / questions.length) * 100;
   progressFill.style.width = `${progressPercentage}%`;
+
   nextButton.textContent =
     index === questions.length - 1 ? "See results" : "Next question";
+
   startTimer();
 }
-
-const feedback = document.querySelector("#feedback");
-const nextButton = document.querySelector("#next-button");
-const results = document.querySelector("#results");
-const finalScore = document.querySelector("#final-score");
-const restartButton = document.querySelector("#restart-button");
-const questionArea = document.querySelector("#question-area");
-const quizStatus = document.querySelector(".quiz-status");
-const progressBarContainer = document.querySelector(".progress-track");
-const quizIntro = document.querySelector(".quiz-intro");
-const quizActions = document.querySelector(".quiz-actions");
 
 function handleAnswerSelection(event) {
   const button = event.target.closest(".answer-option");
@@ -242,10 +249,6 @@ function handleAnswerSelection(event) {
   nextButton.disabled = false;
 }
 
-answerList.addEventListener("click", handleAnswerSelection);
-
-renderQuestion(questions[0], 0);
-
 function handleNextQuestion() {
   // Do not advance until the current question is answered.
   if (answerList.dataset.answered !== "true") {
@@ -264,6 +267,8 @@ function handleNextQuestion() {
     quizActions.hidden = true;
     results.hidden = false;
 
+    resultsTitle.focus();
+
     return;
   }
 
@@ -276,8 +281,11 @@ function handleNextQuestion() {
   nextButton.disabled = true;
 
   renderQuestion(questions[currentQuestionIndex], currentQuestionIndex);
+
+  // Move keyboard focus to the newly displayed question.
+  questionText.focus();
 }
-nextButton.addEventListener("click", handleNextQuestion);
+
 function handleRestart() {
   currentQuestionIndex = 0;
   score = 0;
@@ -297,6 +305,13 @@ function handleRestart() {
   nextButton.disabled = true;
 
   renderQuestion(questions[currentQuestionIndex], currentQuestionIndex);
+
+  // Return focus to the first question after restarting.
+  questionText.focus();
 }
 
+answerList.addEventListener("click", handleAnswerSelection);
+nextButton.addEventListener("click", handleNextQuestion);
 restartButton.addEventListener("click", handleRestart);
+
+renderQuestion(questions[0], 0);
