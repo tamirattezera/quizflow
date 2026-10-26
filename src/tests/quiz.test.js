@@ -36,6 +36,7 @@ describe("quiz question data", () => {
     }
   });
 });
+
 describe("finalizeQuestion", () => {
   it("finalizes an unanswered question", () => {
     expect(finalizeQuestion(false)).toEqual({
@@ -49,5 +50,15 @@ describe("finalizeQuestion", () => {
       finalized: false,
       answered: true,
     });
+  });
+
+  it("keeps rejecting attempts after a question is finalized", () => {
+    const firstAttempt = finalizeQuestion(false);
+    const secondAttempt = finalizeQuestion(firstAttempt.answered);
+    const thirdAttempt = finalizeQuestion(secondAttempt.answered);
+
+    expect(firstAttempt.finalized).toBe(true);
+    expect(secondAttempt.finalized).toBe(false);
+    expect(thirdAttempt.finalized).toBe(false);
   });
 });
