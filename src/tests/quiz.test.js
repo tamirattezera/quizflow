@@ -61,4 +61,10 @@ describe("finalizeQuestion", () => {
     expect(secondAttempt.finalized).toBe(false);
     expect(thirdAttempt.finalized).toBe(false);
   });
+  it("requires every question to have non-empty text and explanation", () => {
+    for (const question of questions) {
+      expect(question.text.trim().length).toBeGreaterThan(0);
+      expect(question.explanation.trim().length).toBeGreaterThan(0);
+    }
+  });
 });
