@@ -1,5 +1,6 @@
 import "./style.css";
 import { questions } from "./data/questions.js";
+import { finalizeQuestion, isAnswerCorrect } from "./quiz-logic.js";
 
 document.querySelector("#app").innerHTML = `
   <main class="quiz-app">
@@ -156,11 +157,13 @@ function stopTimer() {
 
 function handleTimeExpired() {
   // Prevent the timeout and an answer click from finalizing the same question.
-  if (answerList.dataset.answered === "true") {
+  const finalization = finalizeQuestion(answerList.dataset.answered === "true");
+
+  if (!finalization.finalized) {
     return;
   }
 
-  answerList.dataset.answered = "true";
+  answerList.dataset.answered = String(finalization.answered);
 
   const question = questions[currentQuestionIndex];
   const answerButtons = answerList.querySelectorAll(".answer-option");
@@ -254,17 +257,16 @@ function handleAnswerSelection(event) {
     return;
   }
 
-  // Ignore further answers after the question has been answered.
-  if (answerList.dataset.answered === "true") {
-    return;
-  }
+  const finalization = finalizeQuestion(answerList.dataset.answered === "true");
 
-  answerList.dataset.answered = "true";
+  if (!finalization.finalized) return;
+
+  answerList.dataset.answered = String(finalization.answered);
   stopTimer();
 
   const selectedOptionId = button.dataset.optionId;
   const question = questions[currentQuestionIndex];
-  const isCorrect = selectedOptionId === question.correctOptionId;
+  const isCorrect = isAnswerCorrect(selectedOptionId, question.correctOptionId);
 
   if (isCorrect) {
     score += 1;
